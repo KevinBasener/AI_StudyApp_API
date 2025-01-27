@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.config.env import FRONTEND_URL
-from api.routers import chat, documents, llm
+
+from config.env import FRONTEND_URL
+from routers import chat, documents, llm
 
 
 def create_app():
