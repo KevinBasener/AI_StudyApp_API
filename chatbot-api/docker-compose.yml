@@ -23,7 +23,7 @@ services:
     environment:
       LOG_LEVEL: DEBUG
       DATABASE_URL: postgresql://user:password@db/chatbot_db
-      OLLAMA_API_BASE: http://host.docker.internal:11434
+      PYTHONPATH: /app/api
     networks:
       - backend
 
