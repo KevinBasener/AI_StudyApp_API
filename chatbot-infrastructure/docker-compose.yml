@@ -27,25 +27,10 @@ services:
       OLLAMA_API_BASE: http://host.docker.internal:11434
     networks:
       - backend
-      - frontend
-  frontend:
-    build:
-      context: ../chatbot-ui
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    depends_on:
-      - api
-    environment:
-      REACT_APP_API_BASE_URL: http://localhost:8000/api
-    networks:
-      - frontend
 
 volumes:
   postgres_data:
 
 networks:
   backend:
-    driver: bridge
-  frontend:
     driver: bridge
