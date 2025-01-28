@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-
-from config.env import FRONTEND_URL
 from routers import chat, documents, llm
 
 
@@ -16,7 +14,6 @@ def create_app():
     # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[FRONTEND_URL],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
