@@ -1,4 +1,5 @@
 import logging
+from http.client import HTTPException
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -25,43 +26,50 @@ async def chat(chat_input: ChatInput, db: Session = Depends(get_db)):
     logger.info("Chat endpoint called with message: %s", chat_input.message)
 
     try:
-        query_embedding = generate_embedding(chat_input.message)
-        logger.info("Embedding generated")
+        # Fetch only the specified documents
+        selected_documents = db.query(Document).filter(Document.id.in_(chat_input.document_ids)).all()
 
-        search_results = vector_store.search(query_embedding, k=3)
-        logger.info("Vector store search completed")
+        if not selected_documents:
+            context = "No relevant documents found."
+        else:
+            context = "\n\n".join(
+                [
+                    f"Document: {doc.filename}\nContent: {doc.content[:500]}..."
+                    for doc in selected_documents
+                ]
+            )
 
-        document_ids = [doc_id for doc_id, _ in search_results]
-        relevant_docs = db.query(Document).filter(Document.id.in_(document_ids)).all()
-        logger.info("Retrieved %d relevant documents", len(relevant_docs))
-
-        context = "\n\n".join(
-            [
-                f"Document: {doc.filename}\nContent: {doc.content[:500]}..."
-                for doc in relevant_docs
-            ]
-        )
-    except IndexError:
-        # Handle the case when the vector store is empty
-        context = "No relevant documents found."
+    except Exception as e:
+        logger.error(f"Database error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database error occurred")
 
     # Prepare the prompt with context
     prompt = f"Context:\n{context}\n\nUser: {chat_input.message}\nAssistant: Based on the context provided (if any), "
 
     # Generate response using Ollama
-    response = await generate_response(chat_input.model, prompt)
+    try:
+        response = await generate_response(chat_input.model, prompt)
+    except Exception as e:
+        logger.error(f"Ollama generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate response from AI")
 
     # Save chat history
-    print("Adding chat history to the database...")
-    chat_history = ChatHistory(
-        user_input=chat_input.message,
-        bot_response=response,
-        model=chat_input.model,
-    )
-    db.add(chat_history)
-    db.commit()
+    try:
+        logger.info("Adding chat history to the database...")
+        chat_history = ChatHistory(
+            user_input=chat_input.message,
+            bot_response=response,
+            model=chat_input.model,
+        )
+        db.add(chat_history)
+        db.commit()
+    except Exception as e:
+        db.rollback()  # Rollback on failure
+        logger.error(f"Database commit failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to save chat history")
 
     return ChatResponse(message=response)
+
 
 
 @router.get("/chat/history", response_model=ChatHistoryList)

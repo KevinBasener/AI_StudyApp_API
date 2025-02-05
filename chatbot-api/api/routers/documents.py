@@ -113,7 +113,7 @@ async def upload_document(file: UploadFile = File(...), db: Session = Depends(ge
         logger.info(f"Total upload process took {time.time() - start_time:.2f} seconds")
 
 
-@router.get("/documents/{doc_id}")
+@router.get("/{doc_id}")
 async def get_document(doc_id: int, db: Session = Depends(get_db)):
     try:
         document = db.query(Document).filter(Document.id == doc_id).first()

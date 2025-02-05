@@ -48,6 +48,7 @@ class ChatHistoryList(BaseModel):
 class ChatInput(BaseModel):
     message: str
     model: str
+    document_ids: List[int]
 
     model_config = ConfigDict(from_attributes=True)
 
