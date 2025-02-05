@@ -97,7 +97,7 @@ async def upload_document(file: UploadFile = File(...), db: Session = Depends(ge
         vector_store.add_document(document.id, embedding)
         logger.info(f"Added document to vector store: {file.filename}")
 
-        return {"message": "Document uploaded successfully"}
+        return {"message": "Document uploaded successfully", "document_id": document.id}
     except ValueError as ve:
         logger.error(f"ValueError in upload_document: {str(ve)}")
         raise HTTPException(status_code=500, detail=str(ve))
@@ -111,6 +111,24 @@ async def upload_document(file: UploadFile = File(...), db: Session = Depends(ge
     finally:
         log_memory_usage()
         logger.info(f"Total upload process took {time.time() - start_time:.2f} seconds")
+
+
+@router.get("/documents/{doc_id}")
+async def get_document(doc_id: int, db: Session = Depends(get_db)):
+    try:
+        document = db.query(Document).filter(Document.id == doc_id).first()
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        return {
+            "id": document.id,
+            "filename": document.filename,
+            "content": document.content,
+            "timestamp": document.timestamp,
+        }
+    except Exception as e:
+        logger.error(f"Error fetching document {doc_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving document")
 
 
 @router.get("/search", response_model=DocumentListResponse)
