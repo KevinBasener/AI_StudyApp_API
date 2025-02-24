@@ -34,7 +34,7 @@ async def chat(chat_input: ChatInput, db: Session = Depends(get_db)):
         else:
             context = "\n\n".join(
                 [
-                    f"Document: {doc.filename}\nContent: {doc.content[:500]}..."
+                    f"Document: {doc.filename}\nContent: {doc.content[:4000]}..."
                     for doc in selected_documents
                 ]
             )
