@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Database
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      POSTGRES_DB: chatbot_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  # Django Backend (API)
+  api:
+    build:
+      context: ./AI_StudyApp_API/chatbot-api  # Adjust to the correct backend folder
+      dockerfile: Dockerfile
+    container_name: api
+    restart: always
+    depends_on:
+      - db
+    environment:
+      LOG_LEVEL: DEBUG
+      DATABASE_URL: postgresql://user:password@db/chatbot_db
+      PYTHONPATH: /app/api
+    networks:
+      - backend
+      - web_network
+    ports:
+      - "8000:8000"  # <-- Exposes port 8000 publicly
+
+  # Django Frontend
+  web-project-django:
+    build:
+      context: ./AI_StudyApp  # Adjust to the correct frontend folder
+      dockerfile: Dockerfile
+    container_name: web_project_django
+    environment:
+      BACKEND_URL: "http://api:8000"
+    restart: always
+    depends_on:
+      - api
+    networks:
+      - web_network
+
+  # Nginx Reverse Proxy
+  web-project-nginx:
+    image: "nginx:latest"
+    container_name: web_project_nginx
+    restart: always
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - web-project-django
+      - api
+    networks:
+      - web_network
+
+# Persistent Storage for PostgreSQL
+volumes:
+  postgres_data:
+
+# Networks for communication
+networks:
+  backend:
+    driver: bridge
+  web_network:
+    driver: bridge
