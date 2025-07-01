@@ -9,8 +9,8 @@ So kannst du die Application auf der BW-Cloud deployen:
 
 2. **REPO clonen:**
    ```bash
-     git clone git@github.com:KevinBasener/AI_StudyApp_API.git
-     git clone git@github.com:KevinBasener/AI_StudyApp.git
+     git clone https://github.com:KevinBasener/AI_StudyApp_API.git
+     git clone https://github.com/KevinBasener/AI_StudyApp.git
    ```
 
 3. **Installiere Docker und Docker Compose**  
