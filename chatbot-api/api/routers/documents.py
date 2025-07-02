@@ -9,7 +9,6 @@ from typing import Any
 
 import chromadb
 import numpy as np
-from utils.document_utility import log_memory_usage, generate_embedding_with_timeout
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 import psutil
@@ -19,7 +18,6 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Document, DocumentListResponse, DocumentResponse
 from services.vector_store import vector_store
-from utils.text_processing import extract_text_from_file, generate_embedding
 
 
 # Create a context manager for the ThreadPoolExecutor
