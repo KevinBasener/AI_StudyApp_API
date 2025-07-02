@@ -17,7 +17,6 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Document, DocumentListResponse, DocumentResponse
-from services.vector_store import vector_store
 
 
 # Create a context manager for the ThreadPoolExecutor
