@@ -17,7 +17,6 @@ from models import (
     Document,
 )
 from services.ollama import generate_response
-from services.vector_store import vector_store
 from utils.document_utility import log_memory_usage, generate_embedding_with_timeout
 
 router = APIRouter()
